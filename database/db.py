@@ -26,3 +26,26 @@ async def init_db():
         """)
 
         await db.commit()
+        from datetime import datetime
+
+async def add_user(user_id, full_name, username):
+    async with aiosqlite.connect(DB_NAME) as db:
+        await db.execute("""
+        INSERT OR IGNORE INTO users(user_id, full_name, username, joined_at)
+        VALUES (?, ?, ?, ?)
+        """, (
+            user_id,
+            full_name,
+            username,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ))
+        await db.commit()
+
+
+async def user_exists(user_id):
+    async with aiosqlite.connect(DB_NAME) as db:
+        cursor = await db.execute(
+            "SELECT user_id FROM users WHERE user_id=?",
+            (user_id,)
+        )
+        return await cursor.fetchone()
